@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -23,6 +23,8 @@ FixStyle(hyper/local,FixHyperLocal)
 #include "fix_hyper.h"
 
 namespace LAMMPS_NS {
+  // forward declaration. struct HyperOneCoeff is defined in my_page.h
+  struct HyperOneCoeff;
 
 class FixHyperLocal : public FixHyper {
  public:
@@ -183,13 +185,8 @@ class FixHyperLocal : public FixHyper {
 
   // data structs for persisting bias coeffs when bond list is reformed
 
-  struct OneCoeff {
-    double biascoeff;
-    tagint tag;
-  };
-
-  MyPage<OneCoeff> *cpage;     // pages of OneCoeff datums for clist
-  OneCoeff **clist;            // ptrs to vectors of bias coeffs for each atom
+  MyPage<HyperOneCoeff> *cpage;// pages of OneCoeff datums for clist
+  HyperOneCoeff **clist;       // ptrs to vectors of bias coeffs for each atom
   int *numcoeff;               // # of bias coeffs per atom (one per bond)
   int maxcoeff;                // allocate sized of clist and numcoeff
 

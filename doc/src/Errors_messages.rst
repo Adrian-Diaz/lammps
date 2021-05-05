@@ -506,10 +506,10 @@ Doc page with :doc:`WARNING messages <Errors_warnings>`
 *Bond/react: Unknown section in map file*
    Please ensure reaction map files are properly formatted.
 
-*Bond/react: Atom affected by reaction too close to template edge*
+*Bond/react: Atom/Bond type affected by reaction too close to template edge*
    This means an atom which changes type or connectivity during the
    reaction is too close to an 'edge' atom defined in the map
-   file. This could cause incorrect assignment of bonds, angle, etc.
+   file.  This could cause incorrect assignment of bonds, angle, etc.
    Generally, this means you must include more atoms in your templates,
    such that there are at least two atoms between each atom involved in
    the reaction and an edge atom.
@@ -1934,6 +1934,12 @@ Doc page with :doc:`WARNING messages <Errors_warnings>`
 *Compute %s does not allow use of dynamic group*
    Dynamic groups have not yet been enabled for this compute.
 
+*Compute for fix pafi does not calculate a local array*
+   Self-explanatory.
+
+*Compute for fix pafi must have 9 fields per atom*
+   Self-explanatory.
+
 *Compute cac/nodal/temp requires a CAC atom style*
    Self-explanatory.
 
@@ -3034,9 +3040,6 @@ Doc page with :doc:`WARNING messages <Errors_warnings>`
    Self-explanatory.
 
 *Dump image line requires atom style line*
-   Self-explanatory.
-
-*Dump image persp option is not yet supported*
    Self-explanatory.
 
 *Dump image requires one snapshot per file*
@@ -5166,9 +5169,6 @@ Atom types must range from 1 to specified # of types.
    The file produced by dump image cannot be binary and must
    be for a single processor.
 
-*Invalid dump image persp value*
-   Persp value must be >= 0.0.
-
 *Invalid dump image theta value*
    Theta must be between 0.0 and 180.0 inclusive.
 
@@ -5779,6 +5779,9 @@ in your CAC model is ill conditioned. Check shape function definitions.
 *Molecule file has dihedrals but no ndihedrals setting*
    Self-explanatory.
 
+*Molecule file has fragments but no nfragments setting*
+   Self-explanatory.
+
 *Molecule file has impropers but no nimpropers setting*
    Self-explanatory.
 
@@ -5786,6 +5789,9 @@ in your CAC model is ill conditioned. Check shape function definitions.
    Self-explanatory.
 
 *Molecule file has no Body Integers section*
+   Self-explanatory.
+
+*Molecule file has no Fragments section*
    Self-explanatory.
 
 *Molecule file has special flags but no bonds*
@@ -8218,9 +8224,6 @@ keyword to allow for additional bonds to be formed
 *Variable for dump image center is invalid style*
    Must be an equal-style variable.
 
-*Variable for dump image persp is invalid style*
-   Must be an equal-style variable.
-
 *Variable for dump image phi is invalid style*
    Must be an equal-style variable.
 
@@ -8383,9 +8386,6 @@ keyword to allow for additional bonds to be formed
    Self-explanatory.
 
 *Variable name for dump image center does not exist*
-   Self-explanatory.
-
-*Variable name for dump image persp does not exist*
    Self-explanatory.
 
 *Variable name for dump image phi does not exist*

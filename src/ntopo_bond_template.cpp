@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -12,7 +12,7 @@
 ------------------------------------------------------------------------- */
 
 #include "ntopo_bond_template.h"
-#include <mpi.h>
+
 #include "atom.h"
 #include "atom_vec.h"
 #include "force.h"
@@ -23,7 +23,7 @@
 #include "molecule.h"
 #include "memory.h"
 #include "error.h"
-#include "fmt/format.h"
+
 
 using namespace LAMMPS_NS;
 
@@ -74,10 +74,10 @@ void NTopoBondTemplate::build()
       if (atom1 == -1) {
         nmissing++;
         if (lostbond == Thermo::ERROR)
-          error->one(FLERR,fmt::format("Bond atoms {} {} missing on "
+          error->one(FLERR,"Bond atoms {} {} missing on "
                                        "proc {} at step {}",tag[i],
                                        bond_atom[iatom][m]+tagprev,
-                                       me,update->ntimestep));
+                                       me,update->ntimestep);
         continue;
       }
       atom1 = domain->closest_image(i,atom1);

@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -16,10 +16,10 @@
 ------------------------------------------------------------------------- */
 
 #include "pair_gran_hooke_history.h"
-#include <mpi.h>
+
 #include <cmath>
 #include <cstring>
-#include <string>
+
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -33,7 +33,6 @@
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
-#include "utils.h"
 
 using namespace LAMMPS_NS;
 
@@ -43,6 +42,7 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : Pair(lmp)
 {
   single_enable = 1;
   no_virial_fdotr_compute = 1;
+  centroidstressflag = CENTROID_NOTAVAIL;
   history = 1;
   size_history = 3;
 
@@ -52,7 +52,7 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : Pair(lmp)
   neighprev = 0;
 
   nmax = 0;
-  mass_rigid = NULL;
+  mass_rigid = nullptr;
 
   // set comm size needed by this Pair if used with fix rigid
 
@@ -65,7 +65,7 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : Pair(lmp)
   // create dummy fix as placeholder for FixNeighHistory
   // this is so final order of Modify:fix will conform to input script
 
-  fix_history = NULL;
+  fix_history = nullptr;
   modify->add_fix("NEIGH_HISTORY_HH_DUMMY all DUMMY");
   fix_dummy = (FixDummy *) modify->fix[modify->nfix-1];
 }
@@ -237,6 +237,7 @@ void PairGranHookeHistory::compute(int eflag, int vflag)
 
         damp = meff*gamman*vnnr*rsqinv;
         ccel = kn*(radsum-r)*rinv - damp;
+        if (limit_damping && (ccel < 0.0)) ccel = 0.0;
 
         // relative velocities
 
@@ -356,19 +357,25 @@ void PairGranHookeHistory::allocate()
 
 void PairGranHookeHistory::settings(int narg, char **arg)
 {
-  if (narg != 6) error->all(FLERR,"Illegal pair_style command");
+  if (narg != 6 && narg != 7) error->all(FLERR,"Illegal pair_style command");
 
-  kn = force->numeric(FLERR,arg[0]);
+  kn = utils::numeric(FLERR,arg[0],false,lmp);
   if (strcmp(arg[1],"NULL") == 0) kt = kn * 2.0/7.0;
-  else kt = force->numeric(FLERR,arg[1]);
+  else kt = utils::numeric(FLERR,arg[1],false,lmp);
 
-  gamman = force->numeric(FLERR,arg[2]);
+  gamman = utils::numeric(FLERR,arg[2],false,lmp);
   if (strcmp(arg[3],"NULL") == 0) gammat = 0.5 * gamman;
-  else gammat = force->numeric(FLERR,arg[3]);
+  else gammat = utils::numeric(FLERR,arg[3],false,lmp);
 
-  xmu = force->numeric(FLERR,arg[4]);
-  dampflag = force->inumeric(FLERR,arg[5]);
+  xmu = utils::numeric(FLERR,arg[4],false,lmp);
+  dampflag = utils::inumeric(FLERR,arg[5],false,lmp);
   if (dampflag == 0) gammat = 0.0;
+
+  limit_damping = 0;
+  if (narg == 7) {
+    if (strcmp(arg[6], "limit_damping") == 0) limit_damping = 1;
+    else error->all(FLERR,"Illegal pair_style command");
+  }
 
   if (kn < 0.0 || kt < 0.0 || gamman < 0.0 || gammat < 0.0 ||
       xmu < 0.0 || xmu > 10000.0 || dampflag < 0 || dampflag > 1)
@@ -385,8 +392,8 @@ void PairGranHookeHistory::coeff(int narg, char **arg)
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
-  force->bounds(FLERR,arg[0],atom->ntypes,ilo,ihi);
-  force->bounds(FLERR,arg[1],atom->ntypes,jlo,jhi);
+  utils::bounds(FLERR,arg[0],1,atom->ntypes,ilo,ihi,error);
+  utils::bounds(FLERR,arg[1],1,atom->ntypes,jlo,jhi,error);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -426,7 +433,7 @@ void PairGranHookeHistory::init_style()
   // it replaces FixDummy, created in the constructor
   // this is so its order in the fix list is preserved
 
-  if (history && fix_history == NULL) {
+  if (history && fix_history == nullptr) {
     char dnumstr[16];
     sprintf(dnumstr,"%d",size_history);
     char **fixarg = new char*[4];
@@ -450,7 +457,7 @@ void PairGranHookeHistory::init_style()
 
   // check for FixRigid so can extract rigid body masses
 
-  fix_rigid = NULL;
+  fix_rigid = nullptr;
   for (i = 0; i < modify->nfix; i++)
     if (modify->fix[i]->rigid_flag) break;
   if (i < modify->nfix) fix_rigid = modify->fix[i];
@@ -554,7 +561,7 @@ void PairGranHookeHistory::read_restart(FILE *fp)
   int me = comm->me;
   for (i = 1; i <= atom->ntypes; i++)
     for (j = i; j <= atom->ntypes; j++) {
-      if (me == 0) utils::sfread(FLERR,&setflag[i][j],sizeof(int),1,fp,NULL,error);
+      if (me == 0) utils::sfread(FLERR,&setflag[i][j],sizeof(int),1,fp,nullptr,error);
       MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
     }
 }
@@ -580,12 +587,12 @@ void PairGranHookeHistory::write_restart_settings(FILE *fp)
 void PairGranHookeHistory::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
-    utils::sfread(FLERR,&kn,sizeof(double),1,fp,NULL,error);
-    utils::sfread(FLERR,&kt,sizeof(double),1,fp,NULL,error);
-    utils::sfread(FLERR,&gamman,sizeof(double),1,fp,NULL,error);
-    utils::sfread(FLERR,&gammat,sizeof(double),1,fp,NULL,error);
-    utils::sfread(FLERR,&xmu,sizeof(double),1,fp,NULL,error);
-    utils::sfread(FLERR,&dampflag,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&kn,sizeof(double),1,fp,nullptr,error);
+    utils::sfread(FLERR,&kt,sizeof(double),1,fp,nullptr,error);
+    utils::sfread(FLERR,&gamman,sizeof(double),1,fp,nullptr,error);
+    utils::sfread(FLERR,&gammat,sizeof(double),1,fp,nullptr,error);
+    utils::sfread(FLERR,&xmu,sizeof(double),1,fp,nullptr,error);
+    utils::sfread(FLERR,&dampflag,sizeof(int),1,fp,nullptr,error);
   }
   MPI_Bcast(&kn,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&kt,1,MPI_DOUBLE,0,world);
@@ -686,6 +693,7 @@ double PairGranHookeHistory::single(int i, int j, int /*itype*/, int /*jtype*/,
 
   damp = meff*gamman*vnnr*rsqinv;
   ccel = kn*(radsum-r)*rinv - damp;
+  if(limit_damping && (ccel < 0.0)) ccel = 0.0;
 
   // relative velocities
 
@@ -793,6 +801,6 @@ void PairGranHookeHistory::unpack_forward_comm(int n, int first, double *buf)
 
 double PairGranHookeHistory::memory_usage()
 {
-  double bytes = nmax * sizeof(double);
+  double bytes = (double)nmax * sizeof(double);
   return bytes;
 }

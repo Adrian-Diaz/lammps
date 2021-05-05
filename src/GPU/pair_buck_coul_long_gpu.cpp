@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -16,26 +16,19 @@
 ------------------------------------------------------------------------- */
 
 #include "pair_buck_coul_long_gpu.h"
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+
 #include "atom.h"
-#include "atom_vec.h"
-#include "comm.h"
-#include "force.h"
-#include "neighbor.h"
-#include "neigh_list.h"
-#include "integrate.h"
-#include "memory.h"
-#include "error.h"
-#include "neigh_request.h"
-#include "universe.h"
-#include "update.h"
 #include "domain.h"
-#include "kspace.h"
+#include "error.h"
+#include "force.h"
 #include "gpu_extra.h"
+#include "kspace.h"
+#include "neigh_list.h"
+#include "neigh_request.h"
+#include "neighbor.h"
 #include "suffix.h"
+
+#include <cmath>
 
 #define EWALD_F   1.12837917
 #define EWALD_P   0.3275911
@@ -180,7 +173,7 @@ void PairBuckCoulLongGPU::init_style()
 
   // insure use of KSpace long-range solver, set g_ewald
 
-  if (force->kspace == NULL)
+  if (force->kspace == nullptr)
     error->all(FLERR,"Pair style requires a KSpace style");
   g_ewald = force->kspace->g_ewald;
 
@@ -189,11 +182,12 @@ void PairBuckCoulLongGPU::init_style()
   if (ncoultablebits) init_tables(cut_coul,cut_respa);
 
   int maxspecial=0;
-  if (atom->molecular)
+  if (atom->molecular != Atom::ATOMIC)
     maxspecial=atom->maxspecial;
+  int mnf = 5e-2 * neighbor->oneatom;
   int success = buckcl_gpu_init(atom->ntypes+1, cutsq,  rhoinv, buck1, buck2,
                                 a, c, offset, force->special_lj, atom->nlocal,
-                                atom->nlocal+atom->nghost, 300, maxspecial,
+                                atom->nlocal+atom->nghost, mnf, maxspecial,
                                 cell_size, gpu_mode, screen, cut_ljsq,
                                 cut_coulsq, force->special_coul, force->qqrd2e,
                                 g_ewald);

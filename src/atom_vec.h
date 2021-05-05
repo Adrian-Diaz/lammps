@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -15,12 +15,14 @@
 #define LMP_ATOM_VEC_H
 
 #include "pointers.h"  // IWYU pragma: export
+#include <vector>
 
 namespace LAMMPS_NS {
 
 class AtomVec : protected Pointers {
  public:
-  int molecular;                       // 0 = atomic, 1 = molecular system
+ enum {PER_ATOM=0,PER_TYPE=1};
+  int molecular;                       // 0 = atomic, 1 = molecular system, 2 = molecular template system
   int bonds_allow,angles_allow;        // 1 if bonds, angles are used
   int dihedrals_allow,impropers_allow; // 1 if dihedrals, impropers used
   int mass_type;                       // 1 if per-type masses
@@ -154,8 +156,8 @@ class AtomVec : protected Pointers {
   virtual int property_atom(char *) {return -1;}
   virtual void pack_property_atom(int, double *, int, int) {}
 
-  virtual bigint memory_usage();
-  virtual bigint memory_usage_bonus() {return 0;}
+  virtual double memory_usage();
+  virtual double memory_usage_bonus() {return 0;}
 
   // old hybrid functions, needed by Kokkos package
 
@@ -196,13 +198,15 @@ class AtomVec : protected Pointers {
   const char *default_create,*default_data_atom,*default_data_vel;
 
   struct Method {
-    void **pdata;
-    int *datatype;
-    int *cols;
-    int **maxcols;
-    int *collength;
-    void **plength;
-    int *index;
+    std::vector<void *> pdata;
+    std::vector<int> datatype;
+    std::vector<int> cols;
+    std::vector<int*> maxcols;
+    std::vector<int> collength;
+    std::vector<void *> plength;
+    std::vector<int> index;
+
+    void resize(int nfield);
   };
 
   Method mgrow,mcopy;
@@ -224,9 +228,7 @@ class AtomVec : protected Pointers {
   int grow_nmax_bonus(int);
   void setup_fields();
   int process_fields(char *, const char *, Method *);
-  void create_method(int, Method *);
-  void init_method(Method *);
-  void destroy_method(Method *);
+  void init_method(int, Method *);
 };
 
 }

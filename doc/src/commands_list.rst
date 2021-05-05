@@ -90,6 +90,7 @@ Commands
    pair_style
    pair_write
    partition
+   plugin
    prd
    print
    processors

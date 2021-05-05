@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -110,7 +110,7 @@ class Comm : protected Pointers {
 
   // memory usage
 
-  virtual bigint memory_usage() = 0;
+  virtual double memory_usage() = 0;
 
   // non-virtual functions common to all Comm styles
 
@@ -120,11 +120,8 @@ class Comm : protected Pointers {
                  int (*)(int, char *, int &, int *&, char *&, void *),
                  int, char *&, int, void *, int statflag=0);
 
-  int read_lines_from_file(FILE *, int, int, char *);
-  int read_lines_from_file_universe(FILE *, int, int, char *);
-
   // extract data useful to other classes
-  virtual void *extract(const char *, int &) {return NULL;}
+  virtual void *extract(const char *, int &) {return nullptr;}
   
   //called to increase the size of bufextra by altering maxexchange variables
   void increase_max_atom(int);
@@ -252,7 +249,7 @@ E: Processor count in z must be 1 for 2d simulation
 
 Self-explanatory.
 
-E: Cannot put data on ring from NULL pointer
+E: Cannot put data on ring from nullptr pointer
 
 W: Communication cutoff is 0.0. No ghost atoms will be generated. Atoms may get lost.
 

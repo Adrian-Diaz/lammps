@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -54,15 +54,12 @@ public:
         double memory_usage();
 
 protected:
-  char **elements;              // names of unique elements
-  int *map;                     // mapping from atom types to elements
-  int nelements;                // # of unique elements
 
         class SplineFunction {
         public:
 
                 /// Default constructor.
-                SplineFunction() : X(NULL), Xs(NULL), Y(NULL), Y2(NULL), Ydelta(NULL), N(0) {}
+                SplineFunction() : X(nullptr), Xs(nullptr), Y(nullptr), Y2(nullptr), Ydelta(nullptr), N(0) {}
 
                 /// Destructor.
                 ~SplineFunction() {
@@ -106,10 +103,10 @@ protected:
                 inline double eval(double x) const
                 {
                         x -= xmin;
-                        if(x <= 0.0) {  // Left extrapolation.
+                        if (x <= 0.0) {  // Left extrapolation.
                                 return Y[0] + deriv0 * x;
                         }
-                        else if(x >= xmax_shifted) {  // Right extrapolation.
+                        else if (x >= xmax_shifted) {  // Right extrapolation.
                                 return Y[N-1] + derivN * (x - xmax_shifted);
                         }
                         else {
@@ -119,7 +116,7 @@ protected:
                                 int khi = N-1;
                                 while(khi - klo > 1) {
                                         int k = (khi + klo) / 2;
-                                        if(Xs[k] > x) khi = k;
+                                        if (Xs[k] > x) khi = k;
                                         else klo = k;
                                 }
                                 double h = Xs[khi] - Xs[klo];
@@ -144,11 +141,11 @@ protected:
                 inline double eval(double x, double& deriv) const
                 {
                         x -= xmin;
-                        if(x <= 0.0) {  // Left extrapolation.
+                        if (x <= 0.0) {  // Left extrapolation.
                                 deriv = deriv0;
                                 return Y[0] + deriv0 * x;
                         }
-                        else if(x >= xmax_shifted) {  // Right extrapolation.
+                        else if (x >= xmax_shifted) {  // Right extrapolation.
                                 deriv = derivN;
                                 return Y[N-1] + derivN * (x - xmax_shifted);
                         }
@@ -159,7 +156,7 @@ protected:
                                 int khi = N-1;
                                 while(khi - klo > 1) {
                                         int k = (khi + klo) / 2;
-                                        if(Xs[k] > x) khi = k;
+                                        if (Xs[k] > x) khi = k;
                                         else klo = k;
                                 }
                                 double h = Xs[khi] - Xs[klo];
@@ -188,7 +185,7 @@ protected:
                 double cutoff() const { return X[N-1]; }
 
                 /// Writes a Gnuplot script that plots the spline function.
-                void writeGnuplot(const char* filename, const char* title = NULL) const;
+                void writeGnuplot(const char* filename, const char* title = nullptr) const;
 
                 /// Broadcasts the spline function parameters to all processors.
                 void communicate(MPI_Comm& world, int me);

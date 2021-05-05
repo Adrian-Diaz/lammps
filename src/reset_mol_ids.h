@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -20,14 +20,28 @@ CommandStyle(reset_mol_ids,ResetMolIDs)
 #ifndef LMP_RESET_MOL_IDS_H
 #define LMP_RESET_MOL_IDS_H
 
-#include "pointers.h"
+#include "command.h"
 
 namespace LAMMPS_NS {
 
-class ResetMolIDs : protected Pointers {
+class ResetMolIDs : public Command {
  public:
   ResetMolIDs(class LAMMPS *);
+  ~ResetMolIDs();
   void command(int, char **);
+  void create_computes(char *, char *);
+  void reset();
+
+private:
+  std::string idfrag, idchunk;
+  int nchunk;
+  int groupbit;
+  int compressflag; // 1 = contiguous values for new IDs
+  int singleflag; // 0 = mol IDs of single atoms set to 0
+  tagint offset; // offset for contiguous mol ID values
+
+  class ComputeFragmentAtom *cfa;
+  class ComputeChunkAtom *cca;
 };
 
 }

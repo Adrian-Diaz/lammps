@@ -1,6 +1,6 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -21,7 +21,7 @@ FixStyle(tune/kspace,FixTuneKspace)
 #define LMP_FIX_TUNE_KSPACE_H
 
 #include "fix.h"
-#include <string>
+
 
 namespace LAMMPS_NS {
 

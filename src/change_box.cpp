@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
+   https://lammps.sandia.gov/, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
@@ -12,22 +12,20 @@
 ------------------------------------------------------------------------- */
 
 #include "change_box.h"
-#include <mpi.h>
+
+#include "atom.h"
+#include "comm.h"
+#include "domain.h"
+#include "error.h"
+#include "fix.h"
+#include "group.h"
+#include "irregular.h"
+#include "lattice.h"
+#include "modify.h"
+#include "output.h"
+
 #include <cmath>
 #include <cstring>
-#include "atom.h"
-#include "modify.h"
-#include "fix.h"
-#include "domain.h"
-#include "lattice.h"
-#include "comm.h"
-#include "irregular.h"
-#include "output.h"
-#include "group.h"
-#include "error.h"
-#include "force.h"
-#include "utils.h"
-#include "fmt/format.h"
 
 using namespace LAMMPS_NS;
 
@@ -37,7 +35,7 @@ enum{X=0,Y,Z,YZ,XZ,XY};
 
 /* ---------------------------------------------------------------------- */
 
-ChangeBox::ChangeBox(LAMMPS *lmp) : Pointers(lmp) {}
+ChangeBox::ChangeBox(LAMMPS *lmp) : Command(lmp) {}
 
 /* ---------------------------------------------------------------------- */
 
@@ -83,23 +81,23 @@ void ChangeBox::command(int narg, char **arg)
       if (strcmp(arg[iarg+1],"final") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal change_box command");
         ops[nops].flavor = FINAL;
-        ops[nops].flo = force->numeric(FLERR,arg[iarg+2]);
-        ops[nops].fhi = force->numeric(FLERR,arg[iarg+3]);
+        ops[nops].flo = utils::numeric(FLERR,arg[iarg+2],false,lmp);
+        ops[nops].fhi = utils::numeric(FLERR,arg[iarg+3],false,lmp);
         ops[nops].vdim1 = ops[nops].vdim2 = -1;
         nops++;
         iarg += 4;
       } else if (strcmp(arg[iarg+1],"delta") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal change_box command");
         ops[nops].flavor = DELTA;
-        ops[nops].dlo = force->numeric(FLERR,arg[iarg+2]);
-        ops[nops].dhi = force->numeric(FLERR,arg[iarg+3]);
+        ops[nops].dlo = utils::numeric(FLERR,arg[iarg+2],false,lmp);
+        ops[nops].dhi = utils::numeric(FLERR,arg[iarg+3],false,lmp);
         ops[nops].vdim1 = ops[nops].vdim2 = -1;
         nops++;
         iarg += 4;
       } else if (strcmp(arg[iarg+1],"scale") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal change_box command");
         ops[nops].flavor = SCALE;
-        ops[nops].scale = force->numeric(FLERR,arg[iarg+2]);
+        ops[nops].scale = utils::numeric(FLERR,arg[iarg+2],false,lmp);
         ops[nops].vdim1 = ops[nops].vdim2 = -1;
         nops++;
         iarg += 3;
@@ -129,13 +127,13 @@ void ChangeBox::command(int narg, char **arg)
       if (strcmp(arg[iarg+1],"final") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal change_box command");
         ops[nops].flavor = FINAL;
-        ops[nops].ftilt = force->numeric(FLERR,arg[iarg+2]);
+        ops[nops].ftilt = utils::numeric(FLERR,arg[iarg+2],false,lmp);
         nops++;
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"delta") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal change_box command");
         ops[nops].flavor = DELTA;
-        ops[nops].dtilt = force->numeric(FLERR,arg[iarg+2]);
+        ops[nops].dtilt = utils::numeric(FLERR,arg[iarg+2],false,lmp);
         nops++;
         iarg += 3;
       } else error->all(FLERR,"Illegal change_box command");
@@ -178,7 +176,7 @@ void ChangeBox::command(int narg, char **arg)
 
   int move_atoms = 0;
   for (int m = 0; m < nops; m++) {
-    if (ops[m].style != ORTHO || ops[m].style != TRICLINIC) move_atoms = 1;
+    if (ops[m].style != ORTHO && ops[m].style != TRICLINIC) move_atoms = 1;
   }
 
   // error if moving atoms and there is stored per-atom restart state
@@ -195,7 +193,7 @@ void ChangeBox::command(int narg, char **arg)
   // compute scale factors if FINAL,DELTA used since they have distance units
 
   int flag = 0;
-  for (int i = 0; i < nops; i++)
+  for (i = 0; i < nops; i++)
     if (ops[i].style == FINAL || ops[i].style == DELTA) flag = 1;
 
   if (flag && scaleflag) {
@@ -297,7 +295,7 @@ void ChangeBox::command(int narg, char **arg)
       if (output->ndump)
         error->all(FLERR,
                    "Cannot change box ortho/triclinic with dumps defined");
-      for (int i = 0; i < modify->nfix; i++)
+      for (i = 0; i < modify->nfix; i++)
         if (modify->fix[i]->no_change_box)
           error->all(FLERR,
                      "Cannot change box ortho/triclinic with "
@@ -312,7 +310,7 @@ void ChangeBox::command(int narg, char **arg)
       if (output->ndump)
         error->all(FLERR,
                    "Cannot change box ortho/triclinic with dumps defined");
-      for (int i = 0; i < modify->nfix; i++)
+      for (i = 0; i < modify->nfix; i++)
         if (modify->fix[i]->no_change_box)
           error->all(FLERR,
                      "Cannot change box ortho/triclinic with "
