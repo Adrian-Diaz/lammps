@@ -21,15 +21,15 @@ namespace LAMMPS_NS {
 class Neighbor : protected Pointers {
  public:
   enum { NSQ, BIN, MULTI_OLD, MULTI };
-  int style;           // 0,1,2,3 = nsq, bin, multi/old, multi
-  int every;           // build every this many steps
-  int delay;           // delay build for this many steps
-  int dist_check;      // 0 = always build, 1 = only if 1/2 dist
-  int ago;             // how many steps ago neighboring occurred
-  int pgsize;          // size of neighbor page
-  int oneatom;         // max # of neighbors for one atom
-  int includegroup;    // only build pairwise lists for this group
-  int build_once;      // 1 if only build lists once per run
+  int style;                       // 0,1,2,3 = nsq, bin, multi/old, multi
+  int every;                       // build every this many steps
+  int delay;                       // delay build for this many steps
+  int dist_check;                  // 0 = always build, 1 = only if 1/2 dist
+  int ago;                         // how many steps ago neighboring occurred
+  int pgsize;                      // size of neighbor page
+  int oneatom;                     // max # of neighbors for one atom
+  int includegroup;                // only build pairwise lists for this group
+  int build_once;                  // 1 if only build lists once per run
   int atomvec_check_flag;          // 1 if atomvec style invokes its own check function for rebuilds
   int stencil_post_create_flag;    // 1 if atomvec style invokes its own check function for rebuilds
 
@@ -143,6 +143,8 @@ class Neighbor : protected Pointers {
   double memory_usage();
 
   bigint last_setup_bins;    // step of last neighbor::setup_bins() call
+  class NStencil **neigh_stencil;
+  class NBin **neigh_bin;
 
  protected:
   int me, nprocs;
@@ -194,13 +196,11 @@ class Neighbor : protected Pointers {
   BinCreator *binclass;
   char **binnames;
   int *binmasks;
-  class NBin **neigh_bin;
 
   typedef class NStencil *(*StencilCreator)(class LAMMPS *);
   StencilCreator *stencilclass;
   char **stencilnames;
   int *stencilmasks;
-  class NStencil **neigh_stencil;
 
   typedef class NPair *(*PairCreator)(class LAMMPS *);
   PairCreator *pairclass;
@@ -259,7 +259,7 @@ namespace NeighConst {
     NB_SSA = 1 << 3,
     NB_STANDARD = 1 << 4,
     NB_MULTI = 1 << 5,
-    NB_CAC = 1<<6
+    NB_CAC = 1 << 6
   };
 
   enum {
@@ -274,7 +274,7 @@ namespace NeighConst {
     NS_GHOST = 1 << 8,
     NS_SSA = 1 << 9,
     NS_MULTI_OLD = 1 << 10,
-    NS_CAC	  = 1<<11
+    NS_CAC = 1 << 11
   };
 
   enum {
@@ -304,7 +304,7 @@ namespace NeighConst {
     NP_HALF_FULL = 1 << 23,
     NP_OFF2ON = 1 << 24,
     NP_MULTI_OLD = 1 << 25,
-    NP_CAC = 1<<26
+    NP_CAC = 1 << 26
   };
 }    // namespace NeighConst
 

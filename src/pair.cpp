@@ -67,6 +67,7 @@ Pair::Pair(LAMMPS *lmp) : Pointers(lmp)
   writedata = 0;
   finitecutflag = 0;
   ghostneigh = 0;
+  flux_enable = 0;
   unit_convert_flag = utils::NOCONVERT;
 
   nextra = 0;
