@@ -33,6 +33,7 @@ class PairSW : public Pair {
   virtual void coeff(int, char **);
   virtual double init_one(int, int);
   virtual void init_style();
+  virtual void flux_interaction(int, int, int, int, int, int, double, double *fforce);
 
   static constexpr int NPARAMS_PER_LINE = 14;
 

@@ -58,7 +58,8 @@ class Pair : protected Pointers {
   int writedata;                  // 1 if writes coeffs to data file
   int finitecutflag;              // 1 if cut depends on finite atom size
   int ghostneigh;                 // 1 if pair style needs neighbors of ghosts
-  double **cutghost;              // cutoff for each ghost pair
+  int flux_enable;      // 1 if additional pair interaction computation exists for manybody flux
+  double **cutghost;    // cutoff for each ghost pair
 
   int ewaldflag;         // 1 if compatible with Ewald solver
   int pppmflag;          // 1 if compatible with PPPM solver
@@ -154,6 +155,11 @@ class Pair : protected Pointers {
   {
     fforce = 0.0;
     return 0.0;
+  }
+
+  virtual void flux_interaction(int, int, int, int, int, int, double, double *fforce)
+  {
+    fforce = NULL;
   }
 
   void hessian_twobody(double fforce, double dfac, double delr[3], double phiTensor[6]);
