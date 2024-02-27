@@ -228,6 +228,7 @@ class Neighbor : protected Pointers {
 
   void print_pairwise_info();
   void requests_new2old();
+  void requests_new2old_index_info();
 
   int choose_bin(class NeighRequest *);
   int choose_stencil(class NeighRequest *);

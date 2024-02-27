@@ -987,6 +987,9 @@ int Neighbor::init_pair()
     requests[i]->index_pair = i;
   }
 
+  //copy index info for bins, stencils, and npair to old requests
+  requests_new2old_index_info();
+
   // allocate initial pages for each list, except if copy flag set
 
   for (i = 0; i < nlist; i++) {
@@ -1725,6 +1728,16 @@ void Neighbor::requests_new2old()
   old_triclinic = triclinic;
   old_pgsize = pgsize;
   old_oneatom = oneatom;
+}
+
+/* ----------------------------------------------------------------------
+   make copy of additional index info to old requests
+------------------------------------------------------------------------- */
+
+void Neighbor::requests_new2old_index_info()
+{
+  for (int i = 0; i < old_nrequest; i++) 
+    old_requests[i]->copy_request_index_info(requests[i],1);
 }
 
 /* ----------------------------------------------------------------------

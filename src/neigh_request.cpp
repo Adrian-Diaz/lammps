@@ -181,6 +181,21 @@ int NeighRequest::same_skip(NeighRequest *other)
 }
 
 /* ----------------------------------------------------------------------
+   set indeces in this request to those of other request
+------------------------------------------------------------------------- */
+
+void NeighRequest::copy_request_index_info(NeighRequest *other, int skipflag)
+{
+  index_bin = other->index_bin;
+  index_pair = other->index_pair;
+  index_stencil = other->index_stencil;
+  copy = other->copy;
+  copylist = other->copylist;
+  halffull = other->halffull;
+  halffulllist = other->halffulllist;
+}
+
+/* ----------------------------------------------------------------------
    set params in this request to those of other request
    copy same fields that are checked in identical()
    purpose is to allow comparison of new requests to old requests
