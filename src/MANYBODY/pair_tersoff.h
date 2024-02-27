@@ -33,7 +33,6 @@ class PairTersoff : public Pair {
   void coeff(int, char **);
   virtual void init_style();
   double init_one(int, int);
-  virtual void flux_interaction(int, int, int, int, int, int, double, double *fforce);
 
   template <int SHIFT_FLAG, int EVFLAG, int EFLAG, int VFLAG_ATOM> void eval();
 

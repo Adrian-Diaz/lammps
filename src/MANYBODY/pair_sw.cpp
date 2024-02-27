@@ -46,7 +46,7 @@ PairSW::PairSW(LAMMPS *lmp) : Pair(lmp)
   manybody_flag = 1;
   centroidstressflag = CENTROID_NOTAVAIL;
   unit_convert_flag = utils::get_supported_conversions(utils::ENERGY);
-  flux_enable = 1;
+
   params = nullptr;
 
   maxshort = 10;
@@ -531,100 +531,4 @@ void PairSW::threebody(Param *paramij, Param *paramik, Param *paramijk,
   fk[2] = delr2[2]*(frad2+csfac2)-delr1[2]*facang12;
 
   if (eflag) eng = facrad;
-}
-
-/* ---------------------------------------------------------------------- */
-//surface flux
-void PairSW::flux_interaction(int i, int j, int ii, int jj, int istype, int jstype, double rssq, double *fforce)
-{
-  int k,kk,inum,jnum,jnumm1;
-  int itype,jtype,ktype,ijparam,ikparam,ijkparam;
-  tagint itag,jtag;
-  double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,rsq1,rsq2;
-  double delr1[3],delr2[3],fj[3],fk[3];
-  int *ilist,*jlist,*numneigh,**firstneigh;
-  evdwl = 0.0;
-  double **x = atom->x;
-  double **f = atom->f;
-  double **v = atom->v;
-  tagint *tag = atom->tag;
-  int *type = atom->type;
-  inum = list->inum;
-  ilist = list->ilist;
-  numneigh = list->numneigh;
-  firstneigh = list->firstneigh;
-
-  // loop over full neighbor list of my atoms
-
-  fforce[0]=0;
-  fforce[1]=0;
-  fforce[2]=0;
-    itag = tag[i];
-    itype = map[type[i]];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
-
-    // two-body interactions, skip half of them
-
-    jlist = firstneigh[i];
-    jnum = numneigh[i];
-    jtag = tag[j];
-
-      jtype = map[type[j]];
-
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
-      rsq = delx*delx + dely*dely + delz*delz;
-
-      ijparam = elem3param[itype][jtype][jtype];
-      if (rsq >= params[ijparam].cutsq) return;
-
-      twobody(&params[ijparam],rsq,fpair,0,evdwl);
-
-      //add both i-j and j-i contribution if using half neighbor lists; otherwise one contribution at a time.
-      fforce[0] -= 0.5*delx*fpair;
-      fforce[1] -= 0.5*dely*fpair;
-      fforce[2] -= 0.5*delz*fpair;
-
-      jtype = map[type[j]];
-      ijparam = elem3param[itype][jtype][jtype];
-      delr1[0] = x[j][0] - xtmp;
-      delr1[1] = x[j][1] - ytmp;
-      delr1[2] = x[j][2] - ztmp;
-      rsq1 = delr1[0]*delr1[0] + delr1[1]*delr1[1] + delr1[2]*delr1[2];
-      if (rsq1 >= params[ijparam].cutsq) return;
-
-      for (kk = 0; kk < jnum; kk++) {
-        
-        k = jlist[kk];
-        if(j==k) continue;
-        k &= NEIGHMASK;
-        ktype = map[type[k]];
-        
-        delr2[0] = x[k][0] - xtmp;
-        delr2[1] = x[k][1] - ytmp;
-        delr2[2] = x[k][2] - ztmp;
-        ikparam = elem3param[itype][ktype][ktype];
-        rsq2 = delr2[0]*delr2[0] + delr2[1]*delr2[1] + delr2[2]*delr2[2];
-        if (rsq2 >= params[ikparam].cutsq) continue;
-        if(kk>jj){
-        ijkparam = elem3param[itype][jtype][ktype];
-        threebody(&params[ijparam],&params[ikparam],&params[ijkparam],
-                  rsq1,rsq2,delr1,delr2,fj,fk,0,evdwl);
-        fforce[0] += fj[0];
-        fforce[1] += fj[1];
-        fforce[2] += fj[2];
-        }
-        else{
-        ijkparam = elem3param[itype][ktype][jtype];
-        threebody(&params[ikparam],&params[ijparam],&params[ijkparam],
-                  rsq2,rsq1,delr2,delr1,fk,fj,0,evdwl);
-        fforce[0] += fj[0];
-        fforce[1] += fj[1];
-        fforce[2] += fj[2];
-        }
-    }
 }
