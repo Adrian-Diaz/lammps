@@ -1,0 +1,11 @@
+The cac model is 100x100x100 nm about 
+
+Just use the in.f90 file to generate the substrate using the basis files.
+
+Then relax the model using the in_relax.dm file. 
+
+You need to experiment with diffferent force factors and also not to heat the substrate to 900 right away.
+
+After relaxing the model for say 110000 timesteps and the model is stable, 
+
+you may then use the restart file and run growth using the in_grow file. 
